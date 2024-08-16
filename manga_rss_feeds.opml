@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+    <head>
+        <title>Manga RSS Feeds</title>
+    </head>
+    <body>
+        <outline text="Sono Bisque Doll wa Koi wo Suru" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/13952982910/rss" />
+        <outline text="Vinland Saga" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/27728982867/rss" />
+        <outline text="Oshi no Ko" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/17997087747/rss" />
+        <outline text="Boku no Kokoro no Yabai Yatsu" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/9143777514/rss" />
+        <outline text="Kimi no Koto ga Dai Dai Dai Dai Daisuki na 100-nin no Kanojo" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/23862878832/rss" />
+        <outline text="Uzaki-chan wa Asobitai" type="rss" xmlUrl="https://api.mangaupdates.com/v1/series/60675588667/rss" />
+    </body>
+</opml>
