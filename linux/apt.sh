@@ -41,24 +41,36 @@ install_essentials() {
     done
 }
 
-# Create user interactively
-create_user() {
-    echo -e "\n[3] Creating a new user"
-    read -rp "Enter the username to create: " input_user
+# Prompt and optionally create user
+maybe_create_user() {
+    echo -e "\n[3] User Setup"
+    read -rp "Do you want to create a new user? (y/n): " create_choice
 
-    NEW_USER="$input_user"  # assign globally
+    if [[ "$create_choice" =~ ^[Yy]$ ]]; then
+        read -rp "Enter the username to create: " input_user
+        NEW_USER="$input_user"
 
-    if id "$NEW_USER" &>/dev/null; then
-        echo "   - User '$NEW_USER' already exists. Skipping creation."
+        if id "$NEW_USER" &>/dev/null; then
+            echo "   - User '$NEW_USER' already exists. Skipping creation."
+        else
+            echo "   - Creating user '$NEW_USER' and adding to sudo group..."
+            $SUDO adduser "$NEW_USER"
+            $SUDO usermod -aG sudo "$NEW_USER"
+
+            echo "   - Verifying sudo access for '$NEW_USER'..."
+            if ! $SUDO grep -q "^%sudo" /etc/sudoers; then
+                echo "   - Updating /etc/sudoers to allow sudo group access..."
+                $SUDO bash -c "echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers"
+            fi
+        fi
     else
-        echo "   - Creating user '$NEW_USER' and adding to sudo group..."
-        $SUDO adduser "$NEW_USER"
-        $SUDO usermod -aG sudo "$NEW_USER"
-
-        echo "   - Verifying sudo access for '$NEW_USER'..."
-        if ! $SUDO grep -q "^%sudo" /etc/sudoers; then
-            echo "   - Updating /etc/sudoers to allow sudo group access..."
-            $SUDO bash -c "echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers"
+        read -rp "Enter the existing username you want to use: " input_user
+        if id "$input_user" &>/dev/null; then
+            NEW_USER="$input_user"
+            echo "   - Using existing user '$NEW_USER'"
+        else
+            echo "   - ERROR: User '$input_user' does not exist. Exiting."
+            exit 1
         fi
     fi
 }
@@ -66,7 +78,7 @@ create_user() {
 # Optionally install fish and make it default shell
 install_fish_shell() {
     echo -e "\n[4] Optional: Install Fish shell and set as default"
-    read -rp "Do you want to install Fish shell and make it default for the new user? (y/n): " choice
+    read -rp "Do you want to install Fish shell and make it default for the user '$NEW_USER'? (y/n): " choice
     if [[ "$choice" =~ ^[Yy]$ ]]; then
         if ! command -v fish &>/dev/null; then
             echo "   - Installing fish..."
@@ -80,7 +92,7 @@ install_fish_shell() {
             echo "$DEFAULT_SHELL" | $SUDO tee -a /etc/shells
         fi
 
-        if [[ -z "${NEW_USER:-}" ]]; then
+        if [[ -z "$NEW_USER" ]]; then
             echo "   - ERROR: NEW_USER is not set. Cannot set default shell."
             return
         fi
@@ -96,7 +108,7 @@ install_fish_shell() {
 main() {
     update_system
     install_essentials
-    create_user
+    maybe_create_user
     install_fish_shell
 
     echo -e "\n✅ Setup complete!"
