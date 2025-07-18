@@ -42,7 +42,10 @@ install_essentials() {
 
 # Create user interactively
 create_user() {
-    echo -e "\n[3] Creating a new user"
+    echo -e "\n[3] User Creation Step"
+    read -rp "Do you want to create a new user? [y/N]: " CONFIRM
+    [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "   - Skipping user creation."; return; }
+
     read -rp "Enter the username to create: " NEW_USER
 
     if id "$NEW_USER" &>/dev/null; then

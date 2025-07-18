@@ -42,13 +42,16 @@ install_essentials() {
 
 # Create user interactively
 create_user() {
-    echo -e "\n[3] Creating a new user"
+    echo -e "\n[3] User Creation Step"
+    read -rp "Do you want to create a new user? [y/N]: " CONFIRM
+    [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "   - Skipping user creation."; return; }
+
     read -rp "Enter the username to create: " NEW_USER
 
     if id "$NEW_USER" &>/dev/null; then
         echo "   - User '$NEW_USER' already exists. Skipping creation."
     else
-        echo "   - Creating user '$NEW_USER' and adding to sudo group..."
+        echo "   - Creating user '$NEW_USER' and adding to wheel group..."
         $SUDO useradd -m -s /bin/bash -G wheel "$NEW_USER"
         echo "   - Set a password for '$NEW_USER':"
         $SUDO passwd "$NEW_USER"
