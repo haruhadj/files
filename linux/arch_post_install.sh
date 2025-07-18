@@ -4,10 +4,17 @@ set -euo pipefail
 
 ### CONFIGURATION ###
 DEFAULT_SHELL="/usr/bin/fish"
-ESSENTIAL_PACKAGES=(sudo) # Add more essentials here
+ESSENTIAL_PACKAGES=(sudo git) # Add more essentials here
 #####################
 
 echo "====== Arch WSL Setup Script ======"
+
+ensure_downloader() {
+    if ! command -v curl &>/dev/null && ! command -v wget &>/dev/null; then
+        echo "[!] Neither curl nor wget is installed. Installing curl..."
+        sudo pacman -Syu --noconfirm curl wget
+    fi
+}
 
 # Function to update the system
 update_system() {
@@ -70,6 +77,7 @@ install_fish_shell() {
 
 # Entry point
 main() {
+    ensure_downloader
     update_system
     install_essentials
     create_user
