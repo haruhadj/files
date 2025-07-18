@@ -1,32 +1,25 @@
 #!/bin/bash
+set -euo pipefail
 
-# Detect if we are root
+### CONFIGURATION ###
+DEFAULT_SHELL="/usr/bin/fish"
+ESSENTIAL_PACKAGES=(curl wget sudo)
+#####################
+
+echo "====== Arch WSL Setup Script ======"
+
+# Detect if script is run as root or not
 if [ "$(id -u)" -eq 0 ]; then
     SUDO=""
 else
     SUDO="sudo"
 fi
 
+# Ensure sudo is available if needed
 if [ "$SUDO" = "sudo" ] && ! command -v sudo &>/dev/null; then
-    echo "[!] 'sudo' is required but not installed. Installing it now..."
+    echo "[!] 'sudo' is not installed. Installing..."
     pacman -Sy --noconfirm sudo
 fi
-
-set -euo pipefail
-
-### CONFIGURATION ###
-DEFAULT_SHELL="/usr/bin/fish"
-ESSENTIAL_PACKAGES=(sudo git) # Add more essentials here
-#####################
-
-echo "====== Arch WSL Setup Script ======"
-
-ensure_downloader() {
-    if ! command -v curl &>/dev/null && ! command -v wget &>/dev/null; then
-        echo "[!] Neither curl nor wget is installed. Installing curl..."
-        $SUDO pacman -Syu --noconfirm curl wget
-    fi
-}
 
 # Function to update the system
 update_system() {
@@ -34,7 +27,7 @@ update_system() {
     $SUDO pacman -Syu --noconfirm
 }
 
-# Function to install essential base packages
+# Install essential packages
 install_essentials() {
     echo -e "\n[2] Installing essential packages: ${ESSENTIAL_PACKAGES[*]}"
     for pkg in "${ESSENTIAL_PACKAGES[@]}"; do
@@ -47,7 +40,7 @@ install_essentials() {
     done
 }
 
-# Function to add a new user interactively
+# Create user interactively
 create_user() {
     echo -e "\n[3] Creating a new user"
     read -rp "Enter the username to create: " NEW_USER
@@ -62,7 +55,7 @@ create_user() {
     fi
 }
 
-# Function to install fish shell and set as default
+# Optionally install fish and make it default shell
 install_fish_shell() {
     echo -e "\n[4] Optional: Install Fish shell and set as default"
     read -rp "Do you want to install Fish shell and make it default for the new user? (y/n): " choice
@@ -74,7 +67,6 @@ install_fish_shell() {
             echo "   - Fish already installed"
         fi
 
-        # Add to /etc/shells if not present
         if ! grep -q "$DEFAULT_SHELL" /etc/shells; then
             echo "   - Adding $DEFAULT_SHELL to /etc/shells"
             echo "$DEFAULT_SHELL" | $SUDO tee -a /etc/shells
@@ -87,16 +79,15 @@ install_fish_shell() {
     fi
 }
 
-# Entry point
+# Main entry point
 main() {
-    ensure_downloader
     update_system
     install_essentials
     create_user
     install_fish_shell
 
-    echo -e "\n✅ Setup complete! You can now switch to the user with:"
-    echo "   su - $NEW_USER"
+    echo -e "\n✅ Setup complete!"
+    echo "You can now switch to the user with: su - $NEW_USER"
 }
 
 main
