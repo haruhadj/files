@@ -4,6 +4,7 @@ set -euo pipefail
 ### CONFIGURATION ###
 DEFAULT_SHELL="/usr/bin/fish"
 ESSENTIAL_PACKAGES=(curl wget sudo)
+NEW_USER=""  # declare early to avoid unbound variable issues
 #####################
 
 echo "====== Debian/Ubuntu WSL Setup Script ======"
@@ -42,11 +43,10 @@ install_essentials() {
 
 # Create user interactively
 create_user() {
-    echo -e "\n[3] User Creation Step"
-    read -rp "Do you want to create a new user? [y/N]: " CONFIRM
-    [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "   - Skipping user creation."; return; }
+    echo -e "\n[3] Creating a new user"
+    read -rp "Enter the username to create: " input_user
 
-    read -rp "Enter the username to create: " NEW_USER
+    NEW_USER="$input_user"  # assign globally
 
     if id "$NEW_USER" &>/dev/null; then
         echo "   - User '$NEW_USER' already exists. Skipping creation."
@@ -78,6 +78,11 @@ install_fish_shell() {
         if ! grep -q "$DEFAULT_SHELL" /etc/shells; then
             echo "   - Adding $DEFAULT_SHELL to /etc/shells"
             echo "$DEFAULT_SHELL" | $SUDO tee -a /etc/shells
+        fi
+
+        if [[ -z "${NEW_USER:-}" ]]; then
+            echo "   - ERROR: NEW_USER is not set. Cannot set default shell."
+            return
         fi
 
         echo "   - Setting $DEFAULT_SHELL as default shell for $NEW_USER"
