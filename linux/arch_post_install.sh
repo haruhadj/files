@@ -48,10 +48,16 @@ create_user() {
     if id "$NEW_USER" &>/dev/null; then
         echo "   - User '$NEW_USER' already exists. Skipping creation."
     else
-        echo "   - Creating user '$NEW_USER'..."
-        $SUDO useradd -m -G wheel "$NEW_USER"
+        echo "   - Creating user '$NEW_USER' and adding to sudo group..."
+        $SUDO useradd -m -s /bin/bash -G wheel "$NEW_USER"
         echo "   - Set a password for '$NEW_USER':"
         $SUDO passwd "$NEW_USER"
+
+        echo "   - Verifying sudo access for '$NEW_USER'..."
+        if ! $SUDO grep -q "^%wheel ALL=(ALL:ALL) ALL" /etc/sudoers; then
+            echo "   - Updating /etc/sudoers to allow wheel group sudo access..."
+            $SUDO bash -c "echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers"
+        fi
     fi
 }
 
