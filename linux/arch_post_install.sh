@@ -12,7 +12,6 @@ if [ "$SUDO" = "sudo" ] && ! command -v sudo &>/dev/null; then
     pacman -Sy --noconfirm sudo
 fi
 
-
 set -euo pipefail
 
 ### CONFIGURATION ###
