@@ -7,6 +7,12 @@ else
     SUDO="sudo"
 fi
 
+if [ "$SUDO" = "sudo" ] && ! command -v sudo &>/dev/null; then
+    echo "[!] 'sudo' is required but not installed. Installing it now..."
+    pacman -Sy --noconfirm sudo
+fi
+
+
 set -euo pipefail
 
 ### CONFIGURATION ###
