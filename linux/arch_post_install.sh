@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Detect if we are root
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
+
 set -euo pipefail
 
 ### CONFIGURATION ###
@@ -12,14 +19,14 @@ echo "====== Arch WSL Setup Script ======"
 ensure_downloader() {
     if ! command -v curl &>/dev/null && ! command -v wget &>/dev/null; then
         echo "[!] Neither curl nor wget is installed. Installing curl..."
-        sudo pacman -Syu --noconfirm curl wget
+        $SUDO pacman -Syu --noconfirm curl wget
     fi
 }
 
 # Function to update the system
 update_system() {
     echo -e "\n[1] Updating system..."
-    sudo pacman -Syu --noconfirm
+    $SUDO pacman -Syu --noconfirm
 }
 
 # Function to install essential base packages
@@ -28,7 +35,7 @@ install_essentials() {
     for pkg in "${ESSENTIAL_PACKAGES[@]}"; do
         if ! pacman -Qi "$pkg" &>/dev/null; then
             echo "   - Installing $pkg"
-            sudo pacman -S --noconfirm "$pkg"
+            $SUDO pacman -S --noconfirm "$pkg"
         else
             echo "   - $pkg already installed"
         fi
@@ -44,9 +51,9 @@ create_user() {
         echo "   - User '$NEW_USER' already exists. Skipping creation."
     else
         echo "   - Creating user '$NEW_USER'..."
-        sudo useradd -m -G wheel "$NEW_USER"
+        $SUDO useradd -m -G wheel "$NEW_USER"
         echo "   - Set a password for '$NEW_USER':"
-        sudo passwd "$NEW_USER"
+        $SUDO passwd "$NEW_USER"
     fi
 }
 
@@ -57,7 +64,7 @@ install_fish_shell() {
     if [[ "$choice" =~ ^[Yy]$ ]]; then
         if ! pacman -Qi fish &>/dev/null; then
             echo "   - Installing fish..."
-            sudo pacman -S --noconfirm fish
+            $SUDO pacman -S --noconfirm fish
         else
             echo "   - Fish already installed"
         fi
@@ -65,11 +72,11 @@ install_fish_shell() {
         # Add to /etc/shells if not present
         if ! grep -q "$DEFAULT_SHELL" /etc/shells; then
             echo "   - Adding $DEFAULT_SHELL to /etc/shells"
-            echo "$DEFAULT_SHELL" | sudo tee -a /etc/shells
+            echo "$DEFAULT_SHELL" | $SUDO tee -a /etc/shells
         fi
 
         echo "   - Setting $DEFAULT_SHELL as default shell for $NEW_USER"
-        sudo chsh -s "$DEFAULT_SHELL" "$NEW_USER"
+        $SUDO chsh -s "$DEFAULT_SHELL" "$NEW_USER"
     else
         echo "   - Skipping fish installation"
     fi
