@@ -1,4 +1,4 @@
-gago ka haha tangina nyo
+gago ka haha tangina nyo helloasdasdsad
 # Define paths and URLs
 $DestDir = "C:\AnyDeskPortable"
 $AnyDeskUrl = "https://download.anydesk.com/AnyDesk.exe"
